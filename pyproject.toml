@@ -29,4 +29,5 @@ plots = ["cartopy>=0.23"]
 dev = ["jupyter", "ipykernel", "pytest"]
 
 [tool.setuptools.packages.find]
-where = ["gefs_bias_correction"]
+where = ["."]
+include = ["gefs_bias_correction*"]
