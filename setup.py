@@ -13,8 +13,7 @@ setup(
     long_description=README.read_text(encoding="utf-8") if README.exists() else "",
     long_description_content_type="text/markdown",
     author="Youkyoung Jang",
-    package_dir={"": "src"},
-    packages=find_packages(where="src"),
+    packages=find_packages(include=["gefs_bias_correction", "gefs_bias_correction.*"]),
     python_requires=">=3.10",
     install_requires=[
         "numpy>=1.24",
