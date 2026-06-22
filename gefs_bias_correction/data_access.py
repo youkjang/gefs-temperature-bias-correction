@@ -247,8 +247,21 @@ def build_matched_t2m_dataset(
         analysis_date = xr.concat(analysis_by_fhr, dim="fhr").expand_dims(
             init_date=[pd.Timestamp(init_dt)]
         )
-        forecast_by_date.append(forecast_date)
-        analysis_by_date.append(analysis_date)
+        #forecast_by_date.append(forecast_date)
+        #analysis_by_date.append(analysis_date)
+        forecast_all = xr.concat(
+            forecast_by_date,
+            dim="init_date",
+            compat="override",
+            coords="minimal",
+        )
+
+        analysis_all = xr.concat(
+            analysis_by_date,
+            dim="init_date",
+            compat="override",
+            coords="minimal",
+        )
 
     forecast_all = xr.concat(forecast_by_date, dim="init_date")
     analysis_all = xr.concat(analysis_by_date, dim="init_date")
