@@ -58,7 +58,8 @@ def open_gefs_mean_t2m_with_herbie(
     H = _herbie_object(
         init_dt.strftime("%Y-%m-%d %H:00"),
         model="gefs",
-        product="atmos.25",
+        #product="atmos.25",
+        product="atmos.5",
         member="mean",
         fxx=int(fhr),
         save_dir=str(cache_dir),
