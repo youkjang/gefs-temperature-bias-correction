@@ -1,4 +1,5 @@
-<img width="2172" height="724" alt="ChatGPT Image Jun 23, 2026, 06_24_20 PM" src="https://github.com/user-attachments/assets/e1c9d730-aa61-444f-a2ea-7782a9a4ccac" />
+<img width="1497" height="216" alt="Screenshot 2026-06-23 at 6 27 55 PM" src="https://github.com/user-attachments/assets/937a9795-fab7-44ac-944c-f00f3b0db482" />
+
 
 #GEFS Temperature Bias Correction
 
