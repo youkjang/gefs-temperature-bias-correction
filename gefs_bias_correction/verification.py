@@ -1,0 +1,54 @@
+import numpy as np
+import pandas as pd
+import xarray as xr
+
+
+def area_weights(da: xr.DataArray, lat_name: str = "latitude") -> xr.DataArray:
+    """Return cosine-latitude area weights."""
+    weights = np.cos(np.deg2rad(da[lat_name]))
+    return weights / weights.mean()
+
+
+def area_weighted_mean(da: xr.DataArray) -> xr.DataArray:
+    """Area-weighted mean over latitude and longitude."""
+    weights = area_weights(da)
+    return da.weighted(weights).mean(dim=("latitude", "longitude"))
+
+
+def summarize_by_lead(forecast: xr.DataArray, analysis: xr.DataArray, fhr_coord: xr.DataArray, label: str) -> pd.DataFrame:
+    """Summarize area-weighted bias, RMSE, and MAE by forecast lead time."""
+    rows = []
+    for fhr in sorted(np.unique(fhr_coord.values)):
+        mask = fhr_coord == fhr
+        fcst_fhr = forecast.where(mask, drop=True)
+        anal_fhr = analysis.where(mask, drop=True)
+        err = fcst_fhr - anal_fhr
+        mse_map = (err ** 2).mean("case")
+        mae_map = np.abs(err).mean("case")
+        bias_map = err.mean("case")
+        rows.append({
+            "method": label,
+            "fhr": int(fhr),
+            "bias_c": float(area_weighted_mean(bias_map)),
+            "rmse_c": float(np.sqrt(area_weighted_mean(mse_map))),
+            "mae_c": float(area_weighted_mean(mae_map)),
+            "n_cases": int(fcst_fhr.sizes.get("case", 0)),
+        })
+    return pd.DataFrame(rows)
+
+
+def make_summary_table(test_ds: xr.Dataset, corrected: xr.DataArray) -> pd.DataFrame:
+    """Create raw-vs-corrected summary table by forecast lead time."""
+    raw = summarize_by_lead(test_ds["forecast_t2m_c"], test_ds["analysis_t2m_c"], test_ds["fhr"], label="raw")
+    corr = summarize_by_lead(corrected, test_ds["analysis_t2m_c"], test_ds["fhr"], label="corrected")
+    wide = raw.merge(corr, on="fhr", suffixes=("_raw", "_corrected"))
+    wide["rmse_improvement_c"] = wide["rmse_c_raw"] - wide["rmse_c_corrected"]
+    wide["mae_improvement_c"] = wide["mae_c_raw"] - wide["mae_c_corrected"]
+    wide["abs_bias_improvement_c"] = np.abs(wide["bias_c_raw"]) - np.abs(wide["bias_c_corrected"])
+    columns = [
+        "fhr", "n_cases_raw",
+        "bias_c_raw", "bias_c_corrected", "abs_bias_improvement_c",
+        "rmse_c_raw", "rmse_c_corrected", "rmse_improvement_c",
+        "mae_c_raw", "mae_c_corrected", "mae_improvement_c",
+    ]
+    return wide[columns].sort_values("fhr").reset_index(drop=True)
